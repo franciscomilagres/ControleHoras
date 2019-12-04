@@ -362,9 +362,9 @@ void visualizarDia() {
     FILE *arquivo = fopen("/home/francisco/Documents/RegistroHoras.csv", "r");
 
     daLinha(40, '.', '\n');
-    printf("Que dia? [dd/MM]: ");
     
     do {
+        printf("Que dia? [dd/MM]: ");
         scanf("%d/%d", &dia, &mes);
     
         if (dia < 32 && mes < 13) {
