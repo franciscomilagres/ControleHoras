@@ -4,20 +4,21 @@
 #include <time.h>
 #include <readline/readline.h>
 #include <readline/history.h>
+#include "registro.h"
 
 #define OPCAO_REGISTRAR 1
 #define OPCAO_DELETARANTIGAS 2
 #define OPCAO_EDITARULTIMO 3
 #define OPCAO_VISUALIZARDIA 4
 #define NUMERO_GRANDE 70
-#define NUMDELETAR 30
 
 /* TODO:
  * Edição
  * Registrar apenas Hora Entrada
  * Registrar apenas Hora Saida;
- * Função de abrir o arquivo (evitar repetir string)
+ * doing: Função de abrir o arquivo (evitar repetir string)
  * Pesquisa e calculo de horas pra tarefa
+ * Pesquisar horas trabalhadas numa issue
  */
 
 struct DadosDia {
@@ -25,6 +26,7 @@ struct DadosDia {
     int horas;
     int minutos;
 };
+
 
 int validaHoras(int horain, int minutoin, int horaout, int minutoout){
     int result = 0;
@@ -138,34 +140,6 @@ struct DadosDia printHoje(FILE *arquivo, struct tm hoje){
     return retorno;
 }
 
-//Deleta as linhas antigas do arquivo
-//Ponteiro arquivo deve receber um file ja aberto
-void deletarAntigas(){
-    FILE *novo;
-    FILE *arquivo;
-    char *temp = (char *)malloc(256*sizeof(char));
-    int i;
-
-    arquivo = fopen("/home/francisco/Documents/RegistroHoras.csv", "r");
-    printf("*------------ Rotina de deleção ----------------\n");
-    printf("* Deletar as %d primeiras linhas...\n", NUMDELETAR);
-
-    novo = fopen("/home/francisco/Documents/RegistroHoras_temp.csv", "w");
-    //ir pegando linha ate atingir o fim do arquivo
-    for (i = 0; feof(arquivo) == 0 && fgets(temp, 256, arquivo) != NULL; i++) {
-        if(i < NUMDELETAR)
-            continue;                           //Pular as NUMERO_GRANDE primeiras linhas
-        printf("%d ",i);
-        fprintf(novo, "%s", temp);              //copiar as restantes
-    }
-    fclose(novo);
-    fclose(arquivo);
-    printf("\n* %d linhas no novo arquivo!\n", i-NUMDELETAR);
-    if(rename("/home/francisco/Documents/RegistroHoras_temp.csv","/home/francisco/Documents/RegistroHoras.csv")) {
-        printf("* ERRO: Erro ao renomear aqruivo!!!\n");
-    }
-    printf("*----------------- Fim Deleção -----------------\n");
-}
 
 //Resposta em *resposta
 void *calculaTempo(struct DadosDia *resposta, int horain, int horaout, int minutoin, int minutoout){
@@ -215,11 +189,7 @@ void registrarHoras(struct tm hoje, struct DadosDia dadoshj) {
     daLinha(90, '*', '\n');
     printf("Registrando...\n");
 
-    arquivo = fopen("/home/francisco/Documents/RegistroHoras.csv","a");
-    if(!arquivo){
-        printf("Deu pra abrir o arquivo nao...\nFlw!\n");
-        exit(2);
-    }
+    arquivo = abreRegistro("a");
     
     aux = fprintf(arquivo, "%02d/%02d\t%02d:%02d\t%02d:%02d\t%s\t%02dh%02dmin\n",
             hoje.tm_mday, hoje.tm_mon + 1, horain, minutoin, horaout, minutoout, bugs, tempoRegistro.horas, tempoRegistro.minutos);
@@ -244,12 +214,12 @@ void registrarHoras(struct tm hoje, struct DadosDia dadoshj) {
         printf("ERRO: Consegui escrever nao...\n");
     }
     
-    fclose(arquivo);
+    fechaRegistro();
 
 }
 
 void editarLinha(int linha) {
-    FILE *arquivo = fopen("/home/francisco/Documents/RegistroHoras.csv", "r+");
+    FILE *arquivo = abreRegistro("r+");
     char *temp = (char *)malloc(256*sizeof(char));
     char *entrada = (char *)malloc(13*sizeof(char));
     char *saida = (char *)malloc(13*sizeof(char));
@@ -316,7 +286,7 @@ void editarLinha(int linha) {
     free(temp);
     free(entrada);
     free(saida);
-    fclose(arquivo);
+    fechaRegistro();
 }
 
 
@@ -359,7 +329,7 @@ void printDia(FILE *arquivo, int dia, int mes) {
 void visualizarDia() {
     int dia, mes;
 
-    FILE *arquivo = fopen("/home/francisco/Documents/RegistroHoras.csv", "r");
+    FILE *arquivo = abreRegistro("r");
 
     daLinha(40, '.', '\n');
     
@@ -375,7 +345,7 @@ void visualizarDia() {
     } while(dia > 31 || mes > 12);
 
     daLinha(40, '.', '\n');
-    fclose(arquivo);
+    fechaRegistro();
 }
 
 int main(int argc, char **argv){
@@ -393,42 +363,37 @@ int main(int argc, char **argv){
 
     //verificar as entradas e as de hoje, pra futura edicao.
 
-    arquivo = fopen("/home/francisco/Documents/RegistroHoras.csv", "r");
-    if(!arquivo){
-        printf("ERRO: Cade o arquivo RegistroHoras.csv?\nSe continuar vou criar um novo!\n");
-    }
-    else{
-        dadoshj = printHoje(arquivo, hoje);
-        fclose(arquivo);
-        daLinha(90, '*', '\n');
-        printf("* Tem %d linhas no arquivo, ta? Ta.\nO que ce quer fazer?\n", dadoshj.ultimaLinha);
-        printf("*\t1 - Registar Horas.\n");
-        printf("*\t2 - Deletar as %d mais antigas.\n", NUMDELETAR);
-        printf("*\t3 - Editar último registro.\n");
-        printf("*\t4 - Visualizar horas do dia.\n");
-        printf("* Opção: ");
-        scanf("%d",&opcao);
-        switch(opcao) {
-            case OPCAO_REGISTRAR:
-                daLinha(50, '-', '\n');
-                printf("Vamos registrar!\n");
-                registrarHoras(hoje, dadoshj);
-                break;
-            case OPCAO_DELETARANTIGAS:
-                daLinha(50, '*', '\n');
-                deletarAntigas();
-                break;
-            case OPCAO_EDITARULTIMO:
-                editarLinha(dadoshj.ultimaLinha);
-                break;
-            case OPCAO_VISUALIZARDIA:
-                visualizarDia();
-                break;
-            default:
-                printf(" Nao sabe ler o número das opções???? ");
+    arquivo = abreRegistro("r");
+    dadoshj = printHoje(arquivo, hoje);
+    fechaRegistro();
+    daLinha(90, '*', '\n');
+    printf("* Tem %d linhas no arquivo, ta? Ta.\nO que ce quer fazer?\n", dadoshj.ultimaLinha);
+    printf("*\t1 - Registar Horas.\n");
+    printf("*\t2 - Deletar as %d mais antigas.\n", NUMDELETAR);
+    printf("*\t3 - Editar último registro.\n");
+    printf("*\t4 - Visualizar horas do dia.\n");
+    printf("* Opção: ");
+    scanf("%d",&opcao);
+    switch(opcao) {
+        case OPCAO_REGISTRAR:
+            daLinha(50, '-', '\n');
+            printf("Vamos registrar!\n");
+            registrarHoras(hoje, dadoshj);
+            break;
+        case OPCAO_DELETARANTIGAS:
+            daLinha(50, '*', '\n');
+            deletarAntigas();
+            break;
+        case OPCAO_EDITARULTIMO:
+            editarLinha(dadoshj.ultimaLinha);
+            break;
+        case OPCAO_VISUALIZARDIA:
+            visualizarDia();
+            break;
+        default:
+            printf(" Nao sabe ler o número das opções???? ");
                 break;
         }
-    }
 
     printf("\nFlw!\n");
     daLinha(90, '*', '\n');
