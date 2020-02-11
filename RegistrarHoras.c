@@ -379,7 +379,7 @@ void calcularIssue() {
         line++;
     }
     if(quant) {
-        printf("Essa issue aparece em %d linhas.\n", quant);
+        printf("Essa issue aparece em %d linha%c.\n", quant, quant > 1 ? 's' : '\0');
         printf("\n**** Cê gastou %02d:%02d com a issue %s.****\n", horas, minutos, issue);
     }
     else
