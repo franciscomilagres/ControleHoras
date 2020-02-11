@@ -10,15 +10,16 @@
 #define OPCAO_DELETARANTIGAS 2
 #define OPCAO_EDITARULTIMO 3
 #define OPCAO_VISUALIZARDIA 4
+#define OPCAO_CALCULARISSUE 5
 #define NUMERO_GRANDE 70
 
 /* TODO:
  * Edição
  * Registrar apenas Hora Entrada
  * Registrar apenas Hora Saida;
- * doing: Função de abrir o arquivo (evitar repetir string)
- * Pesquisa e calculo de horas pra tarefa
- * Pesquisar horas trabalhadas numa issue
+ * done: Pesquisa e calculo de horas pra tarefa
+ * Modularizar mais
+ * Substituir scanfs por algo que não de erro com entradas burras
  */
 
 struct DadosDia {
@@ -348,6 +349,47 @@ void visualizarDia() {
     fechaRegistro();
 }
 
+void calcularIssue() {
+    char issue[25];
+    int horas = 0, minutos = 0, quant = 0, line = 0;
+    FILE *arquivo;
+    char *temp = (char *)malloc(256*sizeof(char));
+
+    daLinha(40, '.', '\n');
+    printf("Folgado demais hein... Qual issue? [sugiro formato #dddddd]: ");
+    scanf(" %s", issue);
+    issue[24] = 0;
+
+    arquivo = abreRegistro("r");
+    
+    printf("Essas sao as suas linhas com a issue %s...\n", issue);
+    while(fgets(temp, 256, arquivo)) {
+        int h, m;
+        if(strstr(temp, issue)) {
+            quant++;
+            printf("\t-%d: %s", line, temp);
+            extraiTempoLinha(temp, &h, &m);
+            horas += h;
+            minutos += m;
+            if (minutos >= 60) {
+                minutos -= 60;
+                horas++;
+            }
+        }
+        line++;
+    }
+    if(quant) {
+        printf("Essa issue aparece em %d linhas.\n", quant);
+        printf("\n**** Cê gastou %02d:%02d com a issue %s.****\n", horas, minutos, issue);
+    }
+    else
+        printf("\n---- Não achei essa issue não. Cê digitou direito?\n");
+
+    daLinha(40, '.', '\n');
+    fechaRegistro();
+    free(temp);
+}
+
 int main(int argc, char **argv){
     int aux, opcao;
     time_t t = time(NULL);
@@ -372,6 +414,7 @@ int main(int argc, char **argv){
     printf("*\t2 - Deletar as %d mais antigas.\n", NUMDELETAR);
     printf("*\t3 - Editar último registro.\n");
     printf("*\t4 - Visualizar horas do dia.\n");
+    printf("*\t5 - Calcular horas gastas na issue.\n");
     printf("* Opção: ");
     scanf("%d",&opcao);
     switch(opcao) {
@@ -389,6 +432,9 @@ int main(int argc, char **argv){
             break;
         case OPCAO_VISUALIZARDIA:
             visualizarDia();
+            break;
+        case OPCAO_CALCULARISSUE:
+            calcularIssue();
             break;
         default:
             printf(" Nao sabe ler o número das opções???? ");
