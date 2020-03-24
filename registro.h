@@ -16,13 +16,19 @@
 #include <stdlib.h>
 #include <string.h>
 #define REGISTRO
-// É o caminho que você deseja pro seu arquivo.
-// Um dia nós melhoramos essa forma de acessar. Mas tô com pressa.
-#define CAMINHO "/home/francisco/Documents/RegistroHoras.csv"
+
+// É o nome que você quer dar pro csv que armazenará seus registros.
+// Tô com pressa mas finalmente pude dar uma melhorada aqui
+#define NOME_ARQUIVO "RegistroHoras.csv"
 
 // Numero de linhas a deletar
 #define NUMDELETAR 30
 
+/**
+* Inicializa o caminho do arquivo com a sua $HOME/Documents e NOME
+* Nota: Execute ao iniciar seu programa
+*/
+void preparaCaminhoArquivo();
 
 /**
  * Abre o arquivo no modo desejado.

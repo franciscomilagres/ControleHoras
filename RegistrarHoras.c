@@ -34,7 +34,7 @@ int validaHoras(int horain, int minutoin, int horaout, int minutoout){
 
     if(horain < 5 || horain > 23 || horaout < 5 || horaout > 23 || minutoin > 59 || minutoout > 59){
         printf("\n---Num vem com essas horas malucas nao!---\n\n");
-	result = 1;
+    result = 1;
     }
     if(horaout < horain || (horaout == horain && minutoout < minutoin)){
         printf("\n---Ora ora, um viajante no tempo! Saiu antes de chegar!---\n\n");
@@ -52,9 +52,9 @@ int nextHashTag(char *bugs, int pos){
     int i, max = strlen(bugs);
     
     for(i = pos; i < max; i++){
-	if(bugs[i] == '#')
-	    return i;
-	}
+    if(bugs[i] == '#')
+        return i;
+    }
     return -1;
 }
 
@@ -70,7 +70,7 @@ int validaBugs(char *bugs){
         strncpy(print, &bugs[aux], 7);
         print[7] = '\0';
         printf("\tIssue: %s\n", print);
-	aux = nextHashTag(bugs, aux+1);
+    aux = nextHashTag(bugs, aux+1);
     }
     if(count){
         printf("-\n%d issue%c, ta certo? [s/n]: ", count, count==1 ? '\0':'s');
@@ -180,7 +180,7 @@ void registrarHoras(struct tm hoje, struct DadosDia dadoshj) {
 
     //Pegar o tempo trabalhado
     calculaTempo(&tempoRegistro, horain, horaout, minutoin, minutoout);
-	
+    
     do{
         printf("Trabalhou com o que? Resposta: ");
         scanf(" %[^\n]s",bugs);
@@ -403,11 +403,20 @@ int main(int argc, char **argv){
     printf("\nHoje é: %d/%d/%d\n", hoje.tm_year +1900, hoje.tm_mon+1, hoje.tm_mday);
     daLinha(90, '-', '\n');
 
-    //verificar as entradas e as de hoje, pra futura edicao.
+    // startup
+    preparaCaminhoArquivo();
 
+    // verificar as entradas e as de hoje, pra futura edicao.
     arquivo = abreRegistro("r");
-    dadoshj = printHoje(arquivo, hoje);
-    fechaRegistro();
+    if (arquivo) {
+        dadoshj = printHoje(arquivo, hoje);
+        fechaRegistro();
+    } else {
+        dadoshj.ultimaLinha = 0;
+        dadoshj.horas = 0;
+        dadoshj.minutos = 0;
+    }
+    
     daLinha(90, '*', '\n');
     printf("* Tem %d linhas no arquivo, ta? Ta.\nO que ce quer fazer?\n", dadoshj.ultimaLinha);
     printf("*\t1 - Registar Horas.\n");
