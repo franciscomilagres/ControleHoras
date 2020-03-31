@@ -31,7 +31,7 @@ char *_caminho;
 void preparaCaminhoArquivo() {
     _caminho = (char *)malloc(100*sizeof(char));
     if (_caminho != NULL) {
-        strcat( strcpy(_caminho, getenv("HOME")), "/");
+        strcat( strcpy(_caminho, getenv("HOME")), "/Documents/");
         strcat(_caminho, NOME_ARQUIVO);
     } else {
         printf("ERRO: Falha ao alocar memória!");
