@@ -80,7 +80,7 @@ void deletarAntigas(){
     char *nometmp = (char *)malloc(100*sizeof(char));
     int i;
 
-    strcat( strcpy(nometmp, getenv("HOME")), "/dctmp.csv" );
+    strcat( strcpy(nometmp, getenv("HOME")), "/Documents/dctmp.csv" );
 
     arquivo = abreRegistro("r");
     printf("*------------ Rotina de deleção ----------------\n");
@@ -98,7 +98,7 @@ void deletarAntigas(){
     fechaRegistro();
     printf("\n* %d linhas no novo arquivo!\n", (i > NUMDELETAR) ? i-NUMDELETAR : 0);
     
-    if (rename(nometmp, NOME_ARQUIVO)) {
+    if (rename(nometmp, _caminho)) {
         printf("* ERRO: Erro ao renomear aqruivo!!!\n");
     }
     printf("*----------------- Fim Deleção -----------------\n");
